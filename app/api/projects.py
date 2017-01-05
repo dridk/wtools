@@ -5,6 +5,7 @@ import os
 from app.utils import toJson
 from variant_tools.project import Project
 import uuid
+import shutil
 
 def project_to_item(project_dir):
 	PATH = current_app.config['DATA_PATH']
@@ -14,8 +15,6 @@ def project_to_item(project_dir):
 	except:
 		raise CustomError("Cannot find projet")
 
-
-	print(os.path.join(PATH,project_dir))
 	item = {}
 	
 	try:
@@ -68,3 +67,15 @@ def create_project():
 def get_project(id):
 	item = project_to_item(id)
 	return toJson(item)
+#================================================================================
+@api.route('/projects/<id>/', methods=['DELETE'])
+def delete_project(id):
+	PATH   = current_app.config['DATA_PATH']
+	# DELETING FILES IS DANGEROUS... CHECK IF IT IS THE GOOD FILE 
+	if id in os.listdir(PATH):
+		try:
+			shutil.rmtree(os.path.join(PATH,id))
+		except:
+			raise CustomError("cannot remove project")
+
+	return toJson({"id": id})
