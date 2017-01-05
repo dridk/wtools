@@ -54,6 +54,14 @@ def bad_request(e):
     response.status_code = 400
     return response
 
+# Custom error 
+@api.app_errorhandler(NameError)
+def bad_request(e):
+    response = jsonify({'status': 400, 'error': 'custom error',"success": False,
+                        'message': e.args[0]})
+    response.status_code = 400
+    return response
+
 
 
 
