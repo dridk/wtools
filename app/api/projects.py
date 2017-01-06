@@ -94,7 +94,6 @@ def delete_project(projet_id):
 def select(projet_id):
 
 	#  http GET :5000/api/projects/projet1/select/ fields:='["chr","pos", "ref", "alt", "name2"]'
-
 	if request.json is None:
 		raise CustomError("No fields in body")
 
@@ -132,6 +131,135 @@ def select(projet_id):
 
 
 
+#================================================================================
+@api.route('/projects/<projet_id>/tables/')
+def get_tables(projet_id):
+	PATH  = current_app.config['DATA_PATH']
+	os.chdir(os.path.join(PATH, projet_id))
+	p = Project(verbosity='0') 
+	results = []
+	for name in p.getVariantTables():
+		item = {}
+		item["name"] = name
+		item["description"] = p.descriptionOfTable("variant")[0]
+		item["created"] = p.descriptionOfTable("variant")[1]
+		item["cmd"] = p.descriptionOfTable("variant")[2]
+		item["count"] = p.db.numOfRows("variant")
+
+		results.append(item)
+
+	p.close()
+	return toJson(results)
+
+#================================================================================
+@api.route('/projects/<projet_id>/tables/<name>/')
+def get_table(projet_id, name):
+	PATH  = current_app.config['DATA_PATH']
+	os.chdir(os.path.join(PATH, projet_id))
+	p = Project(verbosity='0') 
+
+	if name not in p.getVariantTables():
+		raise CustomError("Cannot find table "+name)
+
+	item = {}
+	item["name"] = name
+	item["description"] = p.descriptionOfTable("variant")[0]
+	item["created"] = p.descriptionOfTable("variant")[1]
+	item["cmd"] = p.descriptionOfTable("variant")[2]
+	item["count"] = p.db.numOfRows("variant")
+	p.close()
+
+	return toJson(item)
+
+#================================================================================
+@api.route('/projects/<projet_id>/annotations/')
+def get_annotations(projet_id):
+	PATH  = current_app.config['DATA_PATH']
+	os.chdir(os.path.join(PATH, projet_id))
+	p = Project(verbosity='0') 	
+	results = []
+	index = 0
+	for db in p.annoDB:
+		item = {}
+		item["id"] = index
+		item["name"] = db.name 
+		item["description"] = db.description
+		item["type"] = db.anno_type 
+		item["dir"] = db.dir 
+		item["filename"] = db.filename
+		item["fieldsCount"] = len(db.fields)
+		item["version"] = db.version
+		results.append(item)
+		index+=1
+
+	return toJson(item)
+#================================================================================
+@api.route('/projects/<projet_id>/annotations/<int:index>/')
+def get_annotation(projet_id, index):
+	PATH  = current_app.config['DATA_PATH']
+	os.chdir(os.path.join(PATH, projet_id))
+	p = Project(verbosity='0') 	
+	
+	if index < 0 or index >= len(p.annoDB):
+		raise CustomError("Not a valid ID")
+
+	db = p.annoDB[index]
+	item = {}
+	item["id"] = index
+	item["name"] = db.name 
+	item["description"] = db.description
+	item["type"] = db.anno_type 
+	item["dir"] = db.dir 
+	item["filename"] = db.filename
+	item["fieldsCount"] = len(db.fields)
+	item["version"] = db.version
+	fields = []
+	for f in db.fields:
+		f_item = {}
+		f_item["id"] = f.index 
+		f_item["name"] = f.name
+		f_item["type"] = f.type
+		f_item["comment"] = f.comment
+		fields.append(f_item)
+	item["fields"] = fields 
+	return toJson(item)
+
+#================================================================================
+@api.route('/projects/<projet_id>/fields/')
+def get_fields(projet_id):
+	PATH  = current_app.config['DATA_PATH']
+	os.chdir(os.path.join(PATH, projet_id))
+	p = Project(verbosity='0') 	
+
+	results = []
+
+	item = {}
+	item["name"] = "base"
+	fields = []
+	for i in p.db.fieldsOfTable("variant"):
+		if i[0] not in ("variant_id","bin"):
+			f_item = {}
+			f_item["name"] = str(i[0])
+			f_item["type"] = str(i[1])
+			f_item["comment"] = p.descriptionOfField(str(i[0]))
+			fields.append(f_item)
+	item["fields"] = fields 
+	results.append(item)
+
+
+	for db in p.annoDB:	
+		item = {}
+		item["name"] = db.name 
+		fields = []
+		for f in db.fields:
+			f_item = {}
+			f_item["name"] = f.name
+			f_item["type"] = f.type
+			f_item["comment"] = f.comment
+			fields.append(f_item)
+		item["fields"] = fields 
+		results.append(item)
 
 
 
+	return toJson(results)
