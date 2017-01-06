@@ -238,7 +238,7 @@ def get_fields(projet_id):
 	results = []
 
 	item = {}
-	item["name"] = "base"
+	item["name"] = "variant"
 	fields = []
 	for i in p.db.fieldsOfTable("variant"):
 		if i[0] not in ("variant_id","bin"):
