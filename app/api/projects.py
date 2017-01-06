@@ -90,7 +90,7 @@ def delete_project(projet_id):
 	return toJson({"id": projet_id})
 
 #================================================================================
-@api.route('/projects/<projet_id>/select/')
+@api.route('/projects/<projet_id>/select/', methods= ['POST'])
 def select(projet_id):
 
 	#  http GET :5000/api/projects/projet1/select/ fields:='["chr","pos", "ref", "alt", "name2"]'
@@ -100,7 +100,11 @@ def select(projet_id):
 	if "fields" not in request.json:
 		raise CustomError("No fields in body")
 
+
+
 	fields = request.json["fields"]
+
+	print(fields)
 
 	PATH  = current_app.config['DATA_PATH']
 	os.chdir(os.path.join(PATH, projet_id))
