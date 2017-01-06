@@ -240,7 +240,8 @@ def get_fields(projet_id):
 		if i[0] not in ("variant_id","bin"):
 			f_item = {}
 			f_item["name"] = str(i[0])
-			f_item["type"] = str(i[1])
+			f_item["full_name"] =  str(i[0])
+			f_item["type"] = "variant."+str(i[0])
 			f_item["comment"] = p.descriptionOfField(str(i[0]))
 			fields.append(f_item)
 	item["fields"] = fields 
@@ -254,6 +255,7 @@ def get_fields(projet_id):
 		for f in db.fields:
 			f_item = {}
 			f_item["name"] = f.name
+			f_item["full_name"] = db.name +"."+f.name
 			f_item["type"] = f.type
 			f_item["comment"] = f.comment
 			fields.append(f_item)
