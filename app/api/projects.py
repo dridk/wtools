@@ -102,10 +102,11 @@ def select(projet_id):
 
 
 
-	fields = request.json["fields"]
+	fields  = request.json["fields"]
+	query = request.json.get("query","")
 
-	print(fields)
 
+	print(fields, query)
 	PATH  = current_app.config['DATA_PATH']
 	os.chdir(os.path.join(PATH, projet_id))
 
@@ -115,7 +116,7 @@ def select(projet_id):
 	parser.add_argument('-v', '--verbosity', choices=['0', '1', '2', '3'])
 
 
-	req = ['variant','-o'] + fields
+	req = ['variant',query,'-o'] + fields
 	print(req)
 
 	args = parser.parse_args(req)
